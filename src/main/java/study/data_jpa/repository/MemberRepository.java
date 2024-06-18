@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.data_jpa.dto.MemberDto;
@@ -48,6 +49,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query(value = "select m from Member m left join m.team t",
             countQuery = "select count(m) from Member m") //엔티티 조회시 outer join이 필요할 때, count는 join 없이 count하도록 해야 함.
     Page<Member> findByAge(int age, Pageable pageable);
+
+    @Modifying(clearAutomatically = true) // update연산 실행 후 영속성 컨텍스트를 자동으로 clear해서 DB와 영속성 컨텍스트의 싱크가 안맞을 일 없도록 예방할 수 있음.
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 
 
 }
